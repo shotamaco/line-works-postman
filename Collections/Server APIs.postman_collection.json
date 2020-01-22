@@ -1,0 +1,2685 @@
+{
+	"info": {
+		"_postman_id": "2d588b2f-2231-4a20-b623-006181657fc6",
+		"name": "Server APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "0_GetToken",
+			"item": [
+				{
+					"name": "Server Token 取得",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "48edae1d-48bf-4280-808c-a8b1cde3cdb5",
+								"exec": [
+									"",
+									"var navigator = {};",
+									"var window = {};",
+									"",
+									"pm.sendRequest('http://kjur.github.io/jsrsasign/jsrsasign-latest-all-min.js', function (err, res) {",
+									"    if (err) {",
+									"        console.log(err);",
+									"    } else {",
+									"        eval(res.text());",
+									"        const privateKey = pm.environment.get('PRIVATE_KEY');",
+									"        const header = {\"alg\" : \"RS256\", \"typ\" : \"JWT\"};",
+									"        const claimSet =",
+									"        {",
+									"          \"iss\": pm.environment.get('SERVER_ID'),",
+									"          \"exp\": KJUR.jws.IntDate.get(\"now + 1hour\").toString(),",
+									"          \"iat\": KJUR.jws.IntDate.get(\"now\").toString()",
+									"        }",
+									"        ",
+									"        const jwt = KJUR.jws.JWS.sign(null, header, claimSet, privateKey);",
+									"        pm.collectionVariables.set(\"jwt\", jwt);",
+									"        console.log(jwt);",
+									"    }",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "9e38e85e-0825-4a1b-85f8-32cb8d76f5dc",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.have.jsonBody(\"access_token\");",
+									"});",
+									"",
+									"const body = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"access_token\", body.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded; charset=UTF-8"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "grant_type",
+									"value": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+									"type": "text"
+								},
+								{
+									"key": "assertion",
+									"value": "{{jwt}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://authapi.worksmobile.com/b/{{API_ID}}/server/token",
+							"protocol": "https",
+							"host": [
+								"authapi",
+								"worksmobile",
+								"com"
+							],
+							"path": [
+								"b",
+								"{{API_ID}}",
+								"server",
+								"token"
+							]
+						},
+						"description": "LINE WORKS から Serverトークンを取得して、環境設定に保存します"
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "f819f0d8-1527-43e4-b325-d0c3495dff9d",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "ccdbc039-fcfb-4126-afb0-46f26e6081ae",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Bot",
+			"item": [
+				{
+					"name": "Bot登録（1no1）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fc650e01-547e-4153-848d-cf653265ea66",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('botNo');",
+									"    ",
+									"    console.log(jsonData.botNo);",
+									"    pm.collectionVariables.set(\"bot_no_02\", jsonData.botNo);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Postman bot（1no1）\",\n    \"photoUrl\": \"{{IMAGE_URL_01}}\",\n    \"description\": \"Postman で登録した Bot です。\",\n    \"managers\": [\n        \"{{ACCOUNT_ID_01}}\"\n    ],\n    \"submanagers\": [\n        \"{{ACCOUNT_ID_02}}\"\n    ],\n    \"useGroupJoin\": false,\n    \"useCallback\": false\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot"
+							]
+						},
+						"description": "Bot をテナントに登録する。\nhuseDomainScope:使っているのか？\ndomainIds:使っているのか？"
+					},
+					"response": []
+				},
+				{
+					"name": "Botドメイン登録（1on1）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fc650e01-547e-4153-848d-cf653265ea66",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"usePublic\": true,\n    \"usePermission\": true,\n    \"accountIds\": [\n        \"{{ACCOUNT_ID_01}}\",\n        \"{{ACCOUNT_ID_02}}\"\n    ]\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_02}}/domain/{{DOMAIN_ID}}",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_02}}",
+								"domain",
+								"{{DOMAIN_ID}}"
+							]
+						},
+						"description": "Bot の利用ドメインを登録する。\n管理者画面で行う作業をAPIで行える。"
+					},
+					"response": []
+				},
+				{
+					"name": "Botドメイン更新（1on1）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fc650e01-547e-4153-848d-cf653265ea66",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"usePublic\": true,\n    \"usePermission\": false\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_02}}/domain/{{DOMAIN_ID}}",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_02}}",
+								"domain",
+								"{{DOMAIN_ID}}"
+							]
+						},
+						"description": "Bot の利用ドメインを更新する。\n管理者画面で行う作業をAPIで行える。"
+					},
+					"response": []
+				},
+				{
+					"name": "Bot更新（1no1→更新）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fc650e01-547e-4153-848d-cf653265ea66",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Postman bot（更新）\",\n    \"photoUrl\": \"{{IMAGE_URL_01}}\",\n    \"description\": \"Postman で更新した Bot です。\",\n    \"managers\": [\n        \"{{ACCOUNT_ID_01}}\"\n    ],\n    \"submanagers\": [\n        \"{{ACCOUNT_ID_02}}\"\n    ],\n    \"useGroupJoin\": true,\n    \"useCallback\": true,\n    \"callbackUrl\": \"https://test.bot.com/callback\",\n    \"callbackEvents\": [\n        \"text\",\n        \"location\",\n        \"sticker\",\n        \"image\"\n    ]\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_02}}",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_02}}"
+							]
+						},
+						"description": "Bot を更新する。"
+					},
+					"response": []
+				},
+				{
+					"name": "Bot紹介（更新）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fc650e01-547e-4153-848d-cf653265ea66",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData).to.have.property('photoUrl');",
+									"    pm.expect(jsonData).to.have.property('description');",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "consumerKey",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_02}}",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_02}}"
+							]
+						},
+						"description": "Bot を紹介する。"
+					},
+					"response": []
+				},
+				{
+					"name": "Botドメイン削除（更新）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fc650e01-547e-4153-848d-cf653265ea66",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_02}}/domain/{{DOMAIN_ID}}",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_02}}",
+								"domain",
+								"{{DOMAIN_ID}}"
+							]
+						},
+						"description": "Bot の利用ドメインを削除する。\n管理者画面で行う作業をAPIで行える。"
+					},
+					"response": []
+				},
+				{
+					"name": "Bot削除（更新）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fc650e01-547e-4153-848d-cf653265ea66",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "consumerKey",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_02}}",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_02}}"
+							]
+						},
+						"description": "Bot を削除する。"
+					},
+					"response": []
+				},
+				{
+					"name": "Bot登録（複数人）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fc650e01-547e-4153-848d-cf653265ea66",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('botNo');",
+									"    ",
+									"    console.log(jsonData.botNo);",
+									"    pm.collectionVariables.set(\"bot_no_01\", jsonData.botNo);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"value": "{{SERVER_CONSUMER_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Postman bot（複数人）\",\n    \"photoUrl\": \"{{IMAGE_URL_01}}\",\n    \"description\": \"Postman で登録した Bot です。\",\n    \"managers\": [\n        \"{{ACCOUNT_ID_01}}\"\n    ],\n    \"submanagers\": [\n        \"{{ACCOUNT_ID_02}}\"\n    ],\n    \"useGroupJoin\": true,\n    \"useCallback\": true,\n    \"callbackUrl\": \"https://test.bot.com/callback\",\n    \"callbackEvents\": [\n        \"text\",\n        \"location\",\n        \"sticker\",\n        \"image\"\n    ]\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot"
+							]
+						},
+						"description": "Bot をテナントに登録する。\nuseDomainScope:使っているのか？\ndomainIds:使っているのか？"
+					},
+					"response": []
+				},
+				{
+					"name": "Botドメイン登録（複数人）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fc650e01-547e-4153-848d-cf653265ea66",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"usePublic\": true,\n    \"usePermission\": false\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/domain/{{DOMAIN_ID}}",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"domain",
+								"{{DOMAIN_ID}}"
+							]
+						},
+						"description": "Bot の利用ドメインを登録する。\n管理者画面で行う作業をAPIで行える。"
+					},
+					"response": []
+				},
+				{
+					"name": "Bot リスト照会",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0522a671-e982-4ab8-b0a8-3b8fce9dd5ba",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.bots).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot"
+							]
+						},
+						"description": "トーク Bot のリストを照会します。"
+					},
+					"response": []
+				},
+				{
+					"name": "トークルーム登録",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "82468fb8-264a-4381-b904-9dc2fef59ac4",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('roomId');",
+									"    ",
+									"    console.log(jsonData.roomId);",
+									"    pm.collectionVariables.set(\"room_id_01\", jsonData.roomId);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"value": "{{SERVER_CONSUMER_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Postman トークルーム\",\n    \"accountIds\": [\n        \"{{ACCOUNT_ID_01}}\",\n        \"{{ACCOUNT_ID_02}}\"\n    ]\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/room",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"room"
+							]
+						},
+						"description": "Bot からメンバーを招待してトークルームを登録する。"
+					},
+					"response": []
+				},
+				{
+					"name": "画像アップロード01",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cb44e129-5295-43cd-a87e-d6a1ad5d1ffa",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.have.header(\"x-works-resource-id\");",
+									"});",
+									"",
+									"const resourceId = responseHeaders[\"x-works-resource-id\"];",
+									"console.log(resourceId);",
+									"pm.collectionVariables.set(\"image_01\", resourceId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-works-apiid",
+								"value": "{{API_ID}}",
+								"type": "text"
+							},
+							{
+								"key": "consumerKey",
+								"value": "{{SERVER_CONSUMER_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "resourceName",
+									"type": "file",
+									"src": "/Users/hiro/Documents/IMG_9829のコピー.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{STORAGE_URL}}/openapi/message/upload.api",
+							"protocol": "https",
+							"host": [
+								"{{STORAGE_URL}}"
+							],
+							"path": [
+								"openapi",
+								"message",
+								"upload.api"
+							]
+						},
+						"description": "メンバーに送信するコンテンツ(画像のみ)を LINE WORKS サーバーにアップロードする。\n※コンテンツはアップロード後 24 時間を経過すると自動的に削除される。"
+					},
+					"response": []
+				},
+				{
+					"name": "画像ダウンロード01",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cb44e129-5295-43cd-a87e-d6a1ad5d1ffa",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-works-apiid",
+								"type": "text",
+								"value": "{{API_ID}}"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "x-works-resource-id",
+								"value": "{{image_01}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "https://{{STORAGE_URL}}/openapi/message/download.api",
+							"protocol": "https",
+							"host": [
+								"{{STORAGE_URL}}"
+							],
+							"path": [
+								"openapi",
+								"message",
+								"download.api"
+							]
+						},
+						"description": "メンバーが Bot に送信したコンテンツ (現在は画像のみ) など LINE WORKS サーバー上にあるリソースをダウンロードする。"
+					},
+					"response": []
+				},
+				{
+					"name": "テキスト送信",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"value": "{{SERVER_CONSUMER_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"text\",\n        \"text\": \"テキストを送信します！\"\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってテキストメッセージを送信する。"
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json; charset=UTF-8",
+										"type": "text"
+									},
+									{
+										"key": "consumerKey",
+										"value": "{{CONSUMER_KEY}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"text\",\n        \"text\": \"テキストを送信します！\"\n    }\n}"
+								},
+								"url": {
+									"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{BOT_NO}}/message/push",
+									"protocol": "https",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"r",
+										"{{API_ID}}",
+										"message",
+										"v1",
+										"bot",
+										"{{BOT_NO}}",
+										"message",
+										"push"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Fri, 27 Dec 2019 08:48:39 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Apache"
+								},
+								{
+									"key": "Strict-Transport-Security",
+									"value": "max-age=63072000; includeSubdomains; preload"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "unsafe-url"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "\"\""
+						}
+					]
+				},
+				{
+					"name": "テキスト送信 + Quick Reply",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"text\",\n        \"text\": \"テキスト+ Quick Reply を送信します！\",\n        \"quickReply\": {\n            \"items\": [\n                {\n                    \"action\": {\n                        \"type\": \"postback\",\n                        \"label\": \"Postbackです！\",\n                        \"data\": \"postback data\",\n                        \"displayText\": \"Postbackします！\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"message\",\n                        \"label\": \"すし\",\n                        \"text\": \"すし\"\n                    }\n                },\n                {\n                    \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                    \"action\": {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"camera\",\n                        \"label\": \"カメラ\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"cameraRoll\",\n                        \"label\": \"カメラロール\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"location\",\n                        \"label\": \"場所\"\n                    }\n                }\n            ]\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってテキスト+ Quick Reply メッセージを送信する。"
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json; charset=UTF-8",
+										"type": "text"
+									},
+									{
+										"key": "consumerKey",
+										"value": "{{CONSUMER_KEY}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"text\",\n        \"text\": \"テキストを送信します！\"\n    }\n}"
+								},
+								"url": {
+									"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{BOT_NO}}/message/push",
+									"protocol": "https",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"r",
+										"{{API_ID}}",
+										"message",
+										"v1",
+										"bot",
+										"{{BOT_NO}}",
+										"message",
+										"push"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Fri, 27 Dec 2019 08:48:39 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Apache"
+								},
+								{
+									"key": "Strict-Transport-Security",
+									"value": "max-age=63072000; includeSubdomains; preload"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "unsafe-url"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "\"\""
+						}
+					]
+				},
+				{
+					"name": "画像送信（resourceId）",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "cc5a32d1-ce30-4109-a598-e383f456d74b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"image\",\n        \"resourceId\": \"{{image_01}}\"\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使って LINE WORKS に登録済みの画像を送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "画像送信（resourceId）+ Quick Reply",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "cc5a32d1-ce30-4109-a598-e383f456d74b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"image\",\n        \"resourceId\": \"{{image_01}}\",\n        \"quickReply\": {\n            \"items\": [\n                {\n                    \"action\": {\n                        \"type\": \"postback\",\n                        \"label\": \"Postbackです！\",\n                        \"data\": \"postback data\",\n                        \"displayText\": \"Postbackします！\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"message\",\n                        \"label\": \"すし\",\n                        \"text\": \"すし\"\n                    }\n                },\n                {\n                    \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                    \"action\": {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"camera\",\n                        \"label\": \"カメラ\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"cameraRoll\",\n                        \"label\": \"カメラロール\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"location\",\n                        \"label\": \"場所\"\n                    }\n                }\n            ]\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使って LINE WORKS に登録済みの画像 + Quick Reply を送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "画像送信（previewUrl,resourceUrl）",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "86c50201-37f8-4ae5-9234-901d147398c3",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"image\",\n        \"previewUrl\": \"{{IMAGE_URL_01}}\",\n        \"resourceUrl\": \"{{IMAGE_URL_01}}\"\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使って 任意の URL の画像を送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "リンク送信",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"value": "{{SERVER_CONSUMER_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"link\",\n        \"contentText\": \"LINE WORKS です。\",\n        \"linkText\": \"LINE WORKS!\",\n        \"link\": \"https://line.worksmobile.com/jp/\"\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってリンクメッセージを送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "リンク送信 + Quick Reply",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"link\",\n        \"contentText\": \"LINE WORKS です。+ Quick Reply\",\n        \"linkText\": \"LINE WORKS!\",\n        \"link\": \"https://line.worksmobile.com/jp/\",\n        \"quickReply\": {\n            \"items\": [\n                {\n                    \"action\": {\n                        \"type\": \"postback\",\n                        \"label\": \"Postbackです！\",\n                        \"data\": \"postback data\",\n                        \"displayText\": \"Postbackします！\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"message\",\n                        \"label\": \"すし\",\n                        \"text\": \"すし\"\n                    }\n                },\n                {\n                    \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                    \"action\": {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"camera\",\n                        \"label\": \"カメラ\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"cameraRoll\",\n                        \"label\": \"カメラロール\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"location\",\n                        \"label\": \"場所\"\n                    }\n                }\n            ]\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってリンク + Quick Reply メッセージを送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "スタンプ送信",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json; charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"sticker\",\n        \"packageId\": \"1\",\n        \"stickerId\": \"13\"\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってスタンプメッセージを送信する。"
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "consumerKey",
+										"type": "text",
+										"value": "{{CONSUMER_KEY}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"sticker\",\n        \"packageId\": \"1\",\n        \"stickerId\": \"13\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{BOT_NO}}/message/push",
+									"protocol": "https",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"r",
+										"{{API_ID}}",
+										"message",
+										"v1",
+										"bot",
+										"{{BOT_NO}}",
+										"message",
+										"push"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Fri, 27 Dec 2019 08:33:54 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Apache"
+								},
+								{
+									"key": "Strict-Transport-Security",
+									"value": "max-age=63072000; includeSubdomains; preload"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "unsafe-url"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "\"\""
+						}
+					]
+				},
+				{
+					"name": "スタンプ送信 + Quick Reply",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"sticker\",\n        \"packageId\": \"1\",\n        \"stickerId\": \"13\",\n        \"quickReply\": {\n            \"items\": [\n                {\n                    \"action\": {\n                        \"type\": \"postback\",\n                        \"label\": \"Postbackです！\",\n                        \"data\": \"postback data\",\n                        \"displayText\": \"Postbackします！\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"message\",\n                        \"label\": \"すし\",\n                        \"text\": \"すし\"\n                    }\n                },\n                {\n                    \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                    \"action\": {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"camera\",\n                        \"label\": \"カメラ\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"cameraRoll\",\n                        \"label\": \"カメラロール\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"location\",\n                        \"label\": \"場所\"\n                    }\n                }\n            ]\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってスタンプ + Quick Reply メッセージを送信する。"
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "consumerKey",
+										"type": "text",
+										"value": "{{CONSUMER_KEY}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"sticker\",\n        \"packageId\": \"1\",\n        \"stickerId\": \"13\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{BOT_NO}}/message/push",
+									"protocol": "https",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"r",
+										"{{API_ID}}",
+										"message",
+										"v1",
+										"bot",
+										"{{BOT_NO}}",
+										"message",
+										"push"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Fri, 27 Dec 2019 08:33:54 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Apache"
+								},
+								{
+									"key": "Strict-Transport-Security",
+									"value": "max-age=63072000; includeSubdomains; preload"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "unsafe-url"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "\"\""
+						}
+					]
+				},
+				{
+					"name": "ボタンテンプレート送信",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"button_template\",\n        \"contentText\": \"ボタンテンプレートですよ！\",\n        \"actions\": [\n            {\n                \"type\": \"message\",\n                \"label\": \"Message lable\",\n                \"text\": \"Message text\"\n            },\n            {\n                \"type\": \"message\",\n                \"label\": \"Postback lable\",\n                \"text\": \"Postback text\",\n                \"postback\": \"postback data\"\n            },\n            {\n                \"type\": \"uri\",\n                \"label\": \"LINE WORKS\",\n                \"uri\": \"https://line.worksmobile.com/jp/\"\n            }\n        ]\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってボタンテンプレートを送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "ボタンテンプレート送信 + Quick Reply",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"button_template\",\n        \"contentText\": \"ボタンテンプレート + Quick Reply ですよ！\",\n        \"actions\": [\n            {\n                \"type\": \"message\",\n                \"label\": \"Message lable\",\n                \"text\": \"Message text\"\n            },\n            {\n                \"type\": \"message\",\n                \"label\": \"Postback text\",\n                \"text\": \"Postback text\",\n                \"postback\": \"postback data\"\n            },\n            {\n                \"type\": \"uri\",\n                \"label\": \"LINE WORKS\",\n                \"uri\": \"https://line.worksmobile.com/jp/\"\n            }\n        ],\n        \"quickReply\": {\n            \"items\": [\n                {\n                    \"action\": {\n                        \"type\": \"postback\",\n                        \"label\": \"Postbackです！\",\n                        \"data\": \"postback data\",\n                        \"displayText\": \"Postbackします！\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"message\",\n                        \"label\": \"すし\",\n                        \"text\": \"すし\"\n                    }\n                },\n                {\n                    \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                    \"action\": {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"camera\",\n                        \"label\": \"カメラ\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"cameraRoll\",\n                        \"label\": \"カメラロール\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"location\",\n                        \"label\": \"場所\"\n                    }\n                }\n            ]\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってボタンテンプレート + Quick Reply を送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "リストテンプレート送信（resourceId）",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"list_template\",\n        \"coverData\": {\n            \"backgroundResourceId\": \"{{image_01}}\",\n            \"title\": \"リストテンプレートですよ！\",\n            \"subtitle\": \"リストテンプレートサブタイトル\"\n        },\n        \"elements\": [\n            {\n                \"title\": \"Message title\",\n                \"subtitle\": \"Message subtitle\",\n                \"resourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"message\",\n                    \"label\": \"Message label\",\n                    \"text\": \"Message text\"\n                }\n            },\n            {\n                \"title\": \"Postback title\",\n                \"subtitle\": \"Postback subtitle\",\n                \"resourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"message\",\n                    \"label\": \"Postback label\",\n                    \"text\": \"Postback text\",\n                    \"postback\": \"postback data\"\n                }\n            },\n            {\n                \"title\": \"Uri title\",\n                \"subtitle\": \"Uri subtitle\",\n                \"resourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            }\n        ],\n        \"actions\": [\n            [\n                {\n                    \"type\": \"message\",\n                    \"label\": \"Message label\",\n                    \"text\": \"Message text\"\n                },\n                {\n                    \"type\": \"message\",\n                    \"label\": \"Postback label\",\n                    \"text\": \"Postback text\",\n                    \"postback\": \"postback data\"\n                }\n            ],\n            [\n                {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                {\n                    \"type\": \"message\",\n                    \"label\": \"YES\",\n                    \"text\": \"YES\"\n                }\n            ]\n        ]\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってリストテンプレートを送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "リストテンプレート送信（image）",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"list_template\",\n        \"coverData\": {\n            \"backgroundImage\": \"{{IMAGE_URL_01}}\",\n            \"title\": \"リストテンプレートですよ！\",\n            \"subtitle\": \"リストテンプレートサブタイトル\"\n        },\n        \"elements\": [\n            {\n                \"title\": \"Message title\",\n                \"subtitle\": \"Message subtitle\",\n                \"image\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"message\",\n                    \"label\": \"Message label\",\n                    \"text\": \"Message text\"\n                }\n            },\n            {\n                \"title\": \"Postback title\",\n                \"subtitle\": \"Postback subtitle\",\n                \"image\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"message\",\n                    \"label\": \"Postback label\",\n                    \"text\": \"Postback text\",\n                    \"postback\": \"postback data\"\n                }\n            },\n            {\n                \"title\": \"Uri title\",\n                \"subtitle\": \"Uri subtitle\",\n                \"image\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            }\n        ],\n        \"actions\": [\n            [\n                {\n                    \"type\": \"message\",\n                    \"label\": \"Message label\",\n                    \"text\": \"Message text\"\n                },\n                {\n                    \"type\": \"message\",\n                    \"label\": \"Postback label\",\n                    \"text\": \"Postback text\",\n                    \"postback\": \"postback data\"\n                }\n            ],\n            [\n                {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                {\n                    \"type\": \"message\",\n                    \"label\": \"YES\",\n                    \"text\": \"YES\"\n                }\n            ]\n        ]\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってリストテンプレートを送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "リストテンプレート送信（resourceId） + Quick Reply",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"list_template\",\n        \"coverData\": {\n            \"backgroundResourceId\": \"{{image_01}}\",\n            \"title\": \"リストテンプレートですよ！\",\n            \"subtitle\": \"リストテンプレートサブタイトル\"\n        },\n        \"elements\": [\n            {\n                \"title\": \"Message title\",\n                \"subtitle\": \"Message subtitle\",\n                \"resourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"message\",\n                    \"label\": \"Message label\",\n                    \"text\": \"Message text\"\n                }\n            },\n            {\n                \"title\": \"Postback title\",\n                \"subtitle\": \"Postback subtitle\",\n                \"resourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"message\",\n                    \"label\": \"Postback label\",\n                    \"text\": \"Postback text\",\n                    \"postback\": \"postback data\"\n                }\n            },\n            {\n                \"title\": \"Uri title\",\n                \"subtitle\": \"Uri subtitle\",\n                \"resourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            }\n        ],\n        \"actions\": [\n            [\n                {\n                    \"type\": \"message\",\n                    \"label\": \"Message label\",\n                    \"text\": \"Message text\"\n                },\n                {\n                    \"type\": \"message\",\n                    \"label\": \"Postback label\",\n                    \"text\": \"Postback text\",\n                    \"postback\": \"postback data\"\n                }\n            ],\n            [\n                {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                {\n                    \"type\": \"message\",\n                    \"label\": \"YES\",\n                    \"text\": \"YES\"\n                }\n            ]\n        ],\n        \"quickReply\": {\n            \"items\": [\n                {\n                    \"action\": {\n                        \"type\": \"postback\",\n                        \"label\": \"Postbackです！\",\n                        \"data\": \"postback data\",\n                        \"displayText\": \"Postbackします！\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"message\",\n                        \"label\": \"すし\",\n                        \"text\": \"すし\"\n                    }\n                },\n                {\n                    \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                    \"action\": {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"camera\",\n                        \"label\": \"カメラ\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"cameraRoll\",\n                        \"label\": \"カメラロール\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"location\",\n                        \"label\": \"場所\"\n                    }\n                }\n            ]\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってリストテンプレート + Quick Reply を送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "カルーセル送信（resourceId）",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"carousel\",\n        \"imageAspectRatio\": \"rectangle\",\n        \"imageSize\": \"cover\",\n        \"columns\": [\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"Message title\",\n                \"text\": \"Message text\",\n                \"defaultAction\": {\n                    \"type\": \"message\",\n                    \"label\": \"Message label\",\n                    \"text\": \"Default message text\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"message\",\n                        \"label\": \"Message label\",\n                        \"text\": \"Message text\"\n                    },\n                    {\n                        \"type\": \"message\",\n                        \"label\": \"Yes\",\n                        \"text\": \"Yes\"\n                    },\n                    {\n                        \"type\": \"message\",\n                        \"label\": \"No\",\n                        \"text\": \"No\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"Postback title\",\n                \"text\": \"Postback text\",\n                \"defaultAction\": {\n                    \"type\": \"postback\",\n                    \"label\": \"Postback label\",\n                    \"data\": \"Default postback data\",\n                    \"displayText\": \"Default postback displayText\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"postback\",\n                        \"label\": \"Postback label\",\n                        \"data\": \"postback data\",\n                        \"displayText\": \"Postback displayText\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"Uri title\",\n                \"text\": \"Uri text\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"04\",\n                \"text\": \"04\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"05\",\n                \"text\": \"05\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"06\",\n                \"text\": \"06\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"07\",\n                \"text\": \"07\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"08\",\n                \"text\": \"08\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"09\",\n                \"text\": \"09\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"10\",\n                \"text\": \"10\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            }\n        ]\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってカルーセルを送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "カルーセル送信（image）",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"carousel\",\n        \"imageAspectRatio\": \"square\",\n        \"imageSize\": \"contain\",\n        \"columns\": [\n            {\n                \"thumbnailImageUrl\": \"{{IMAGE_URL_01}}\",\n                \"title\": \"Message title\",\n                \"text\": \"Message text\",\n                \"defaultAction\": {\n                    \"type\": \"message\",\n                    \"label\": \"Message label\",\n                    \"text\": \"Default message text\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"message\",\n                        \"label\": \"Message label\",\n                        \"text\": \"Message text\"\n                    },\n                    {\n                        \"type\": \"message\",\n                        \"label\": \"Yes\",\n                        \"text\": \"Yes\"\n                    },\n                    {\n                        \"type\": \"message\",\n                        \"label\": \"No\",\n                        \"text\": \"No\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageUrl\": \"{{IMAGE_URL_01}}\",\n                \"title\": \"Postback title\",\n                \"text\": \"Postback text\",\n                \"defaultAction\": {\n                    \"type\": \"postback\",\n                    \"label\": \"Postback label\",\n                    \"data\": \"Default postback data\",\n                    \"displayText\": \"Default postback displayText\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"postback\",\n                        \"label\": \"Postback label\",\n                        \"data\": \"postback data\",\n                        \"displayText\": \"Postback displayText\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageUrl\": \"{{IMAGE_URL_01}}\",\n                \"title\": \"Uri title\",\n                \"text\": \"Uri text\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageUrl\": \"{{IMAGE_URL_01}}\",\n                \"title\": \"04\",\n                \"text\": \"04\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageUrl\": \"{{IMAGE_URL_01}}\",\n                \"title\": \"05\",\n                \"text\": \"05\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageUrl\": \"{{IMAGE_URL_01}}\",\n                \"title\": \"06\",\n                \"text\": \"06\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageUrl\": \"{{IMAGE_URL_01}}\",\n                \"title\": \"07\",\n                \"text\": \"07\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageUrl\": \"{{IMAGE_URL_01}}\",\n                \"title\": \"08\",\n                \"text\": \"08\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageUrl\": \"{{IMAGE_URL_01}}\",\n                \"title\": \"09\",\n                \"text\": \"09\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageUrl\": \"{{IMAGE_URL_01}}\",\n                \"title\": \"10\",\n                \"text\": \"10\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            }\n        ]\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってカルーセルを送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "カルーセル送信（resourceId）+ Quick Reply",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"carousel\",\n        \"imageAspectRatio\": \"rectangle\",\n        \"imageSize\": \"cover\",\n        \"columns\": [\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"Message title\",\n                \"text\": \"Message text\",\n                \"defaultAction\": {\n                    \"type\": \"message\",\n                    \"label\": \"Message label\",\n                    \"text\": \"Default message text\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"message\",\n                        \"label\": \"Message label\",\n                        \"text\": \"Message text\"\n                    },\n                    {\n                        \"type\": \"message\",\n                        \"label\": \"Yes\",\n                        \"text\": \"Yes\"\n                    },\n                    {\n                        \"type\": \"message\",\n                        \"label\": \"No\",\n                        \"text\": \"No\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"Postback title\",\n                \"text\": \"Postback text\",\n                \"defaultAction\": {\n                    \"type\": \"postback\",\n                    \"label\": \"Postback label\",\n                    \"data\": \"Default postback data\",\n                    \"displayText\": \"Default postback displayText\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"postback\",\n                        \"label\": \"Postback label\",\n                        \"data\": \"postback data\",\n                        \"displayText\": \"Postback displayText\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"Uri title\",\n                \"text\": \"Uri text\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"04\",\n                \"text\": \"04\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"05\",\n                \"text\": \"05\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"06\",\n                \"text\": \"06\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"07\",\n                \"text\": \"07\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"08\",\n                \"text\": \"08\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"09\",\n                \"text\": \"09\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            },\n            {\n                \"thumbnailImageResourceId\": \"{{image_01}}\",\n                \"title\": \"10\",\n                \"text\": \"10\",\n                \"defaultAction\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                },\n                \"actions\": [\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    },\n                    {\n                        \"type\": \"uri\",\n                        \"label\": \"Bot Action Objects\",\n                        \"uri\": \"https://developers.worksmobile.com/jp/document/1005050?lang=ja\"\n                    }\n                ]\n            }\n        ],\n        \"quickReply\": {\n            \"items\": [\n                {\n                    \"action\": {\n                        \"type\": \"postback\",\n                        \"label\": \"Postbackです！\",\n                        \"data\": \"postback data\",\n                        \"displayText\": \"Postbackします！\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"message\",\n                        \"label\": \"すし\",\n                        \"text\": \"すし\"\n                    }\n                },\n                {\n                    \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                    \"action\": {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"camera\",\n                        \"label\": \"カメラ\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"cameraRoll\",\n                        \"label\": \"カメラロール\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"location\",\n                        \"label\": \"場所\"\n                    }\n                }\n            ]\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使ってカルーセル + Quick Reply を送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "画像カルーセル送信（resourceId）",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"image_carousel\",\n        \"columns\": [\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"message\",\n                    \"label\": \"Message\",\n                    \"text\": \"Message text\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"postback\",\n                    \"label\": \"Postback\",\n                    \"data\": \"postback data\",\n                    \"displayText\": \"Postback displayText\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 04\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 05\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 06\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 07\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 08\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 09\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 10\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            }\n        ]\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使って画像カルーセルを送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "画像カルーセル送信（image）",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"image_carousel\",\n        \"columns\": [\n            {\n                \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"message\",\n                    \"label\": \"Message\",\n                    \"text\": \"Message text\"\n                }\n            },\n            {\n                \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"postback\",\n                    \"label\": \"Postback\",\n                    \"data\": \"postback data\",\n                    \"displayText\": \"Postback displayText\"\n                }\n            },\n            {\n                \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 04\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 05\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 06\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 07\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 08\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 09\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 10\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            }\n        ]\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使って画像カルーセルを送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "画像カルーセル送信（resourceId）+ Quick Reply",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9fb4657a-f3c7-424c-8d7a-5ea2630f657a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "2828df26-923c-4d2a-b7a0-7d7d3ff3290b",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json; charset=UTF-8"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": \"{{ACCOUNT_ID_01}}\",\n    \"content\": {\n        \"type\": \"image_carousel\",\n        \"columns\": [\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"message\",\n                    \"label\": \"Message\",\n                    \"text\": \"Message text\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"postback\",\n                    \"label\": \"Postback\",\n                    \"data\": \"postback data\",\n                    \"displayText\": \"Postback displayText\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"LINE WORKS\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 04\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 05\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 06\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 07\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 08\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 09\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            },\n            {\n                \"imageResourceId\": \"{{image_01}}\",\n                \"action\": {\n                    \"type\": \"uri\",\n                    \"label\": \"WORKS 10\",\n                    \"uri\": \"https://line.worksmobile.com/jp/\"\n                }\n            }\n        ],\n        \"quickReply\": {\n            \"items\": [\n                {\n                    \"action\": {\n                        \"type\": \"postback\",\n                        \"label\": \"Postbackです！\",\n                        \"data\": \"postback data\",\n                        \"displayText\": \"Postbackします！\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"message\",\n                        \"label\": \"すし\",\n                        \"text\": \"すし\"\n                    }\n                },\n                {\n                    \"imageUrl\": \"{{IMAGE_URL_01}}\",\n                    \"action\": {\n                        \"type\": \"uri\",\n                        \"label\": \"LINE WORKS\",\n                        \"uri\": \"https://line.worksmobile.com/jp/\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"camera\",\n                        \"label\": \"カメラ\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"cameraRoll\",\n                        \"label\": \"カメラロール\"\n                    }\n                },\n                {\n                    \"action\": {\n                        \"type\": \"location\",\n                        \"label\": \"場所\"\n                    }\n                }\n            ]\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}/message/push",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}",
+								"message",
+								"push"
+							]
+						},
+						"description": "トーク Bot を使って画像カルーセル + Quick Reply を送信する。"
+					},
+					"response": []
+				},
+				{
+					"name": "Bot削除（複数人）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fc650e01-547e-4153-848d-cf653265ea66",
+								"exec": [
+									"pm.test(\"response should be okay to process\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect('').to.be.empty;",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "consumerKey",
+								"name": "Content-Type",
+								"value": "{{SERVER_CONSUMER_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/message/v1/bot/{{bot_no_01}}",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"message",
+								"v1",
+								"bot",
+								"{{bot_no_01}}"
+							]
+						},
+						"description": "Bot を削除する。"
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "ef7a2f22-f974-481e-82ec-dcd8cb7771fe",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "17b65b67-923a-4a15-9f50-990856715070",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Organization",
+			"item": [
+				{
+					"name": "メンバー追加",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "consumerKey",
+								"value": "{{SERVER_CONSUMER_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"taro.works2@works-qiita\",\n  \"name\": {\n    \"lastName\": \"works qiita\"\n  },\n  \"privateEmail\": \"sample01@lineworks.test.com\"\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/organization/v2/domains/{{DOMAIN_ID}}/users/tarotestg",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"organization",
+								"v2",
+								"domains",
+								"{{DOMAIN_ID}}",
+								"users",
+								"tarotestg"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "c0ee1d4b-9eb3-4b01-8330-58bf473c8629",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "15538133-9594-475e-b1e9-a9e3f5c215b6",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

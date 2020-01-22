@@ -1,0 +1,278 @@
+{
+	"info": {
+		"_postman_id": "9f3a8034-6f26-482b-a8dc-3bccf98d0538",
+		"name": "Service APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "0_GetTokenTest（検証用のため使用する必要なし）",
+			"item": [
+				{
+					"name": "Authorization Code 取得 URL 生成",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "cba9c619-222d-49fc-a5ca-2947b21d0bf9",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "38b1b6e6-3cce-46c1-9878-9eb352f049a2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://auth.worksmobile.com/ba/{{API_ID}}/service/authorize?client_id={{SERVICE_CONSUMER_KEY}}&redirect_uri=https://talk.worksmobile.com&domain={{DOMAIN_NAME}}&state=neverdocsrf",
+							"protocol": "https",
+							"host": [
+								"auth",
+								"worksmobile",
+								"com"
+							],
+							"path": [
+								"ba",
+								"{{API_ID}}",
+								"service",
+								"authorize"
+							],
+							"query": [
+								{
+									"key": "client_id",
+									"value": "{{SERVICE_CONSUMER_KEY}}"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "https://talk.worksmobile.com"
+								},
+								{
+									"key": "domain",
+									"value": "{{DOMAIN_NAME}}"
+								},
+								{
+									"key": "state",
+									"value": "neverdocsrf"
+								}
+							]
+						},
+						"description": "Authorization Code を取得するためのURL生成リクエスト。\n\n■ Authorization Code 生成手順\n1. Sendボタンをクリック\n2. Postman Console より、リクエストしたURLをコピーしてブラウザでそのURLにアクセス\n3. ログイン画面が表示されるのでログイン（ログイン済みのブラウザーの場合この手順は省略されます）\n4. ブラウザーのURLのQueryStringのcodeをコピー\n5. 「GET Service Token 取得」の Params のcodeに4でコピーした値をペースト\n6. 「GET Service Token 取得」でSendボタンクリック"
+					},
+					"response": []
+				},
+				{
+					"name": "Service Token 取得",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "8cdd8d4f-dce3-4e25-8790-2ef3c5f20b54",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://auth.worksmobile.com/ba/{{API_ID}}/service/token?client_id={{SERVICE_CONSUMER_KEY}}&code=Authorization Code を入力してください&domain={{DOMAIN_NAME}}",
+							"protocol": "https",
+							"host": [
+								"auth",
+								"worksmobile",
+								"com"
+							],
+							"path": [
+								"ba",
+								"{{API_ID}}",
+								"service",
+								"token"
+							],
+							"query": [
+								{
+									"key": "client_id",
+									"value": "{{SERVICE_CONSUMER_KEY}}"
+								},
+								{
+									"key": "code",
+									"value": "Authorization Code を入力してください"
+								},
+								{
+									"key": "domain",
+									"value": "{{DOMAIN_NAME}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "LINE WORKS Service Token 取得テストで使用します",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "9020d6d5-da6c-4bd1-bded-c36d62dd04e9",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "0b646761-573f-4355-be73-abd0437b65b1",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Calendar",
+			"item": [
+				{
+					"name": "基本カレンダーID照会",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "consumerKey",
+								"value": "{{SERVICE_CONSUMER_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://{{API_URL}}/{{API_ID}}/calendar/getDefaultCalendarId",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"{{API_ID}}",
+								"calendar",
+								"getDefaultCalendarId"
+							]
+						},
+						"description": "ログインしたユーザーアカウントの基本カレンダーIDを照会する。"
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "oauth2",
+				"oauth2": [
+					{
+						"key": "addTokenTo",
+						"value": "header",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "63420b11-c537-44ad-8502-82c7d0267244",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "7ee6be66-9e2e-4fbc-b0b6-a57105a64e08",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "accessToken",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "tokenType",
+				"type": "any"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "17750a83-d39a-4378-998f-7c0946e4a7e6",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "7850687e-ed22-4829-a079-3f4a65dfae29",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
