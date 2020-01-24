@@ -2605,6 +2605,88 @@
 			"name": "Organization",
 			"item": [
 				{
+					"name": "組織追加",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "consumerKey",
+								"value": "{{SERVER_CONSUMER_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"ORG3\",\n    \"email\": \"org3@furusawa-shop\",\n    \"display\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/organization/v2/domains/{{DOMAIN_ID}}/orgunits/test03",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"organization",
+								"v2",
+								"domains",
+								"{{DOMAIN_ID}}",
+								"orgunits",
+								"test03"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "組織修正",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "consumerKey",
+								"type": "text",
+								"value": "{{SERVER_CONSUMER_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"taro.works2@works-qiita\",\n  \"name\": {\n    \"lastName\": \"works qiita\"\n  },\n  \"privateEmail\": \"sample01@lineworks.test.com\"\n}"
+						},
+						"url": {
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/organization/v2/domains/{{DOMAIN_ID}}/orgunits/test03",
+							"protocol": "https",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"r",
+								"{{API_ID}}",
+								"organization",
+								"v2",
+								"domains",
+								"{{DOMAIN_ID}}",
+								"orgunits",
+								"test03"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "メンバー追加",
 					"request": {
 						"method": "POST",
@@ -2623,10 +2705,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"taro.works2@works-qiita\",\n  \"name\": {\n    \"lastName\": \"works qiita\"\n  },\n  \"privateEmail\": \"sample01@lineworks.test.com\"\n}"
+							"raw": "{\n  \"email\": \"taro.works3@furusawa-shop\",\n  \"name\": {\n    \"lastName\": \"works qiita\"\n  },\n  \"privateEmail\": \"sample01@lineworks.tests.com\"\n}"
 						},
 						"url": {
-							"raw": "https://{{API_URL}}/r/{{API_ID}}/organization/v2/domains/{{DOMAIN_ID}}/users/tarotestg",
+							"raw": "https://{{API_URL}}/r/{{API_ID}}/organization/v2/domains/{{DOMAIN_ID}}/users/bbb",
 							"protocol": "https",
 							"host": [
 								"{{API_URL}}"
@@ -2639,11 +2721,33 @@
 								"domains",
 								"{{DOMAIN_ID}}",
 								"users",
-								"tarotestg"
+								"bbb"
 							]
 						}
 					},
 					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "97f96c75-ccda-4708-bd17-502f3abb2823",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "a91929ae-316a-4f05-a1f1-6d1c51060ade",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
 				}
 			],
 			"protocolProfileBehavior": {}
@@ -2679,6 +2783,32 @@
 					""
 				]
 			}
+		}
+	],
+	"variable": [
+		{
+			"id": "6291db6a-6fdb-4390-95a6-691fb6be53cf",
+			"key": "jwt",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "48f849c4-9185-4790-ac85-df6c9d656fa2",
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "e2ce963b-12c1-4cb9-9a4f-1eec50fbc4b2",
+			"key": "bot_no_01",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "282789e8-4268-4868-ba77-9cd650af0fd2",
+			"key": "room_id_01",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"protocolProfileBehavior": {}
